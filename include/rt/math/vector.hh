@@ -1,54 +1,53 @@
 #ifndef RT_MATH_VECTOR_HH
 #define RT_MATH_VECTOR_HH
 
-#include "rt/math/math.hh" // FIXME: absolute of relative include paths?
+#include "rt/math/math.hh"
 
 #include <cstddef>
 
-// FIXME: moeten we tabs invoegen na een namespace?
 namespace rt {
-	// FIXME: ff nadenken of iterators misschien niet toch een goed idee zijn
-	// ook voor matrix
-
-	// FIXME: struct of class?
 	template<class T, std::size_t N>
 	class vector {
 	private:
-		// FIXME: moet data public zijn?
-		T data[N];
+		T elem[N];
 	public:
-		// FIXME: member typedefs en constexprs voor value_type en size enzo
-		// FIXME: noexcept zooi
 		constexpr vector() = default;
 
-		constexpr vector(const T& value) {
-			// FIXME: "auto i = 0; ...", voordelen? nadelen? boeit het? waarschijnlijk niet...
-			// kwestie van code style denk ik, even met daan overleggeni
-			// auto is wel korter, leest misschien makkelijker
+		constexpr vector(const T& arg) {
 			for (std::size_t i = 0; i < N; i++) {
-				data[i] = value;
+				elem[i] = arg;
 			}
 		}
 
 		template<class U>
-		constexpr explicit vector(const vector<U, N>& other) {
+		constexpr explicit vector(const vector<U, N>& arg) {
 			for (std::size_t i = 0; i < N; i++) {
-				data[i] = static_cast<T>(other[i]);
+				elem[i] = static_cast<T>(arg[i]);
 			}
 		}
 
 		constexpr T& operator[](std::size_t index) {
-			return data[index];
+			return elem[index];
 		}
 
 		constexpr const T& operator[](std::size_t index) const {
-			return data[index];
+			return elem[index];
 		}
 
-		// FIXME: friend of freestanding?
-		constexpr friend bool operator==(const vector& lhs, const vector& rhs) {
+		template<std::size_t M>
+		constexpr vector<T, M> operator[](vector<std::size_t, M> index) const {
+			vector<T, M> out;
+
+			for (std::size_t i = 0; i < M; i++) {
+				out[i] = elem[index[i]];
+			}
+
+			return out;
+		}
+
+		constexpr friend bool operator==(const vector& a, const vector& b) {
 			for (std::size_t i = 0; i < N; i++) {
-				if (lhs[i] != rhs[i]) {
+				if (a[i] != b[i]) {
 					return false;
 				}
 			}
@@ -56,263 +55,233 @@ namespace rt {
 			return true;
 		}
 
-		constexpr friend bool operator!=(const vector& lhs, const vector& rhs) {
-			return !(lhs == rhs);
+		constexpr friend bool operator!=(const vector& a, const vector& b) {
+			return !(a == b);
 		}
 
-		// FIXME: nadelen van implementeren als "0 - *this"?
-		// word een andere operator gecalled, in theorie is huidige implementatie meer consequent
 		constexpr vector operator-() const {
-			vector result;
+			vector out;
 
 			for (std::size_t i = 0; i < N; i++) {
-				result[i] = -data[i];
+				out[i] = -elem[i];
 			}
 
-			return result;
+			return out;
 		}
 
-		constexpr vector& operator+=(const vector& rhs) {
+		constexpr vector& operator+=(const vector& arg) {
 			for (std::size_t i = 0; i < N; i++) {
-				data[i] += rhs[i];
-			}
-
-			return *this;
-		}
-
-		constexpr vector& operator-=(const vector& rhs) {
-			for (std::size_t i = 0; i < N; i++) {
-				data[i] -= rhs[i];
+				elem[i] += arg[i];
 			}
 
 			return *this;
 		}
 
-		constexpr vector& operator*=(const vector& rhs) {
+		constexpr vector& operator-=(const vector& arg) {
 			for (std::size_t i = 0; i < N; i++) {
-				data[i] *= rhs[i];
+				elem[i] -= arg[i];
 			}
 
 			return *this;
 		}
 
-		constexpr vector& operator/=(const vector& rhs) {
+		constexpr vector& operator*=(const vector& arg) {
 			for (std::size_t i = 0; i < N; i++) {
-				data[i] /= rhs[i];
+				elem[i] *= arg[i];
 			}
 
 			return *this;
 		}
 
-		// FIXME: friend of freestanding?
-		constexpr friend vector operator+(vector lhs, const vector& rhs) {
-			return lhs += rhs;
+		constexpr vector& operator/=(const vector& arg) {
+			for (std::size_t i = 0; i < N; i++) {
+				elem[i] /= arg[i];
+			}
+
+			return *this;
 		}
 
-		constexpr friend vector operator-(vector lhs, const vector& rhs) {
-			return lhs -= rhs;
+		constexpr friend vector operator+(vector a, const vector& b) {
+			return a += b;
 		}
 
-		constexpr friend vector operator*(vector lhs, const vector& rhs) {
-			return lhs *= rhs;
+		constexpr friend vector operator-(vector a, const vector& b) {
+			return a -= b;
 		}
 
-		constexpr friend vector operator/(vector lhs, const vector& rhs) {
-			return lhs /= rhs;
+		constexpr friend vector operator*(vector a, const vector& b) {
+			return a *= b;
+		}
+
+		constexpr friend vector operator/(vector a, const vector& b) {
+			return a /= b;
 		}
 	};
 
-	// FIXME: helebool functies zijn hier alleen omdat ze in pbrt staan beschreven, misschien is de helft niet nodig
-
-	// FIXME: kan die beter?
-	// misschien met wat fancy c++17 features
-	// zou fijn zijn om het in een constructor te proppen maar dan zit je te kloten met static_assert om te kijken of de hoeveelheid parameters wel overeenkomt met de size van de vector
-	// hier is de size van de vector gewoon gelijk aan de hoeveelheid parameters
-	// ook kut dat een parameter pack niet een fixed type kan hebben
-	// misschien kan het beter met std::initializer_list?
 	template<class T, class... Args>
 	constexpr vector<T, sizeof...(Args)> make_vector(const Args&... args) {
-		T data[] = { static_cast<T>(args)... };
-		vector<T, sizeof...(Args)> result;
+		T elem[] = { static_cast<T>(args)... };
+		vector<T, sizeof...(Args)> out;
 
 		for (std::size_t i = 0; i < sizeof...(Args); i++) {
-			result[i] = data[i];
+			out[i] = elem[i];
 		}
 
-		return result;
+		return out;
 	}
 
-	// FIXME: deze functie kan vec by value nemen dan is de interne "vector<T, N> result" niet nodig
-	// voordelen: korter
-	// nadelen: extra copy? word waarschijnlijk geoptimized, maar durf het niet met zekerheid te zeggen
-	// benchmarks en godbolt zullen het weten
 	template<class T, std::size_t N>
-	constexpr vector<T, N> floor(const vector<T, N>& vec) {
-		vector<T, N> result;
+	constexpr vector<T, N> floor(const vector<T, N>& arg) {
+		vector<T, N> out;
 
 		for (std::size_t i = 0; i < N; i++) {
-			result[i] = floor(vec[i]);
+			out[i] = floor(arg[i]);
 		}
 
-		return vec;
+		return out;
 	}
 
 	template<class T, std::size_t N>
-	constexpr vector<T, N> ceil(const vector<T, N>& vec) {
-		vector<T, N> result;
+	constexpr vector<T, N> ceil(const vector<T, N>& arg) {
+		vector<T, N> out;
 
 		for (std::size_t i = 0; i < N; i++) {
-			result[i] = ceil(vec[i]);
+			out[i] = ceil(arg[i]);
 		}
 
-		return vec;
+		return out;
 	}
 
 	template<class T, std::size_t N>
-	constexpr vector<T, N> abs(const vector<T, N>& vec) {
-		vector<T, N> result;
+	constexpr vector<T, N> abs(const vector<T, N>& arg) {
+		vector<T, N> out;
 
 		for (std::size_t i = 0; i < N; i++) {
-			result[i] = abs(vec[i]);
+			out[i] = abs(arg[i]);
 		}
 
-		return vec;
+		return out;
 	}
 
 	template<class T, std::size_t N>
-	constexpr vector<T, N> min(const vector<T, N>& lhs, const vector<T, N>& rhs) {
-		vector<T, N> result;
+	constexpr vector<T, N> min(const vector<T, N>& a, const vector<T, N>& b) {
+		vector<T, N> out;
 
 		for (std::size_t i = 0; i < N; i++) {
-			result[i] = min(lhs[i], rhs[i]);
+			out[i] = min(a[i], b[i]);
 		}
 
-		return lhs;
+		return out;
 	}
 
 	template<class T, std::size_t N>
-	constexpr vector<T, N> max(const vector<T, N>& lhs, const vector<T, N>& rhs) {
-		vector<T, N> result;
+	constexpr vector<T, N> max(const vector<T, N>& a, const vector<T, N>& b) {
+		vector<T, N> out;
 
 		for (std::size_t i = 0; i < N; i++) {
-			result[i] = max(lhs[i], rhs[i]);
+			out[i] = max(a[i], b[i]);
 		}
 
-		return lhs;
+		return out;
 	}
 
 	template<class T, std::size_t N>
-	constexpr std::size_t min_index(const vector<T, N>& vec) {
-		std::size_t result = 0;
+	constexpr std::size_t min_index(const vector<T, N>& arg) {
+		std::size_t out = 0;
 
 		for (std::size_t i = 1; i < N; i++) {
-			if (vec[i] < vec[result]) {
-				result = i;
+			if (arg[i] < arg[out]) {
+				out = i;
 			}
 		}
 
-		return result;
+		return out;
 	}
 
 	template<class T, std::size_t N>
-	constexpr std::size_t max_index(const vector<T, N>& vec) {
-		std::size_t result = 0;
+	constexpr std::size_t max_index(const vector<T, N>& arg) {
+		std::size_t out = 0;
 
 		for (std::size_t i = 1; i < N; i++) {
-			if (vec[i] > vec[result]) {
-				result = i;
+			if (arg[i] > arg[out]) {
+				out = i;
 			}
 		}
 
-		return result;
+		return out;
 	}
 
 	template<class T, std::size_t N>
-	constexpr T& min(vector<T, N>& vec) {
-		return vec[min_index(vec)];
+	constexpr T& min(vector<T, N>& arg) {
+		return arg[min_index(arg)];
 	}
 
 	template<class T, std::size_t N>
-	constexpr const T& min(const vector<T, N>& vec) {
-		return vec[min_index(vec)];
+	constexpr const T& min(const vector<T, N>& arg) {
+		return arg[min_index(arg)];
 	}
 
 	template<class T, std::size_t N>
-	constexpr T& max(vector<T, N>& vec) {
-		return vec[max_index(vec)];
+	constexpr T& max(vector<T, N>& arg) {
+		return arg[max_index(arg)];
 	}
 
 	template<class T, std::size_t N>
-	constexpr const T& max(const vector<T, N>& vec) {
-		return vec[max_index(vec)];
+	constexpr const T& max(const vector<T, N>& arg) {
+		return arg[max_index(arg)];
 	}
 
-	// FIXME: gaan we ooit een sum(vector) nodig hebben?
-	// zo ja; kan dit worden geimplementeerd als "sum(lhs * rhs)"
 	template<class T, std::size_t N>
-	constexpr T dot(const vector<T, N>& lhs, const vector<T, N>& rhs) {
-		T result = 0;
+	constexpr T dot(const vector<T, N>& a, const vector<T, N>& b) {
+		T out = 0;
 
 		for (std::size_t i = 0; i < N; i++) {
-			result += lhs[i] * rhs[i];
+			out += a[i] * b[i];
 		}
 
-		return result;
+		return out;
 	}
 
 	template<class T, std::size_t N>
-	constexpr T abs_dot(const vector<T, N>& lhs, const vector<T, N>& rhs) {
-		return abs(dot(lhs, rhs));
+	constexpr T abs_dot(const vector<T, N>& a, const vector<T, N>& b) {
+		return abs(dot(a, b));
 	}
 
 	template<class T, std::size_t N>
-	constexpr T length_squared(const vector<T, N>& vec) {
-		return dot(vec, vec);
+	constexpr T length_squared(const vector<T, N>& arg) {
+		return dot(arg, arg);
 	}
 
 	template<class T, std::size_t N>
-	constexpr T length(const vector<T, N>& vec) {
-		return sqrt(length_squared(vec));
+	constexpr T length(const vector<T, N>& arg) {
+		return sqrt(length_squared(arg));
 	}
 
 	template<class T, std::size_t N>
-	constexpr T distance_squared(const vector<T, N>& lhs, const vector<T, N>& rhs) {
-		return length_squared(lhs - rhs);
+	constexpr T distance_squared(const vector<T, N>& a, const vector<T, N>& b) {
+		return length_squared(a - b);
 	}
 
 	template<class T, std::size_t N>
-	constexpr T distance(const vector<T, N>& lhs, const vector<T, N>& rhs) {
-		return length(lhs - rhs);
+	constexpr T distance(const vector<T, N>& a, const vector<T, N>& b) {
+		return length(a - b);
 	}
 
 	template<class T, std::size_t N>
-	constexpr vector<T, N> normalize(const vector<T, N>& vec) {
-		return vec / length(vec);
+	constexpr vector<T, N> normalize(const vector<T, N>& arg) {
+		return arg / length(arg);
 	}
 
 	template<class T>
-	constexpr vector<T, 3> cross(const vector<T, 3>& lhs, const vector<T, 3>& rhs) {
-		T x = lhs[1] * rhs[2] - lhs[2] * rhs[1];
-		T y = lhs[2] * rhs[0] - lhs[0] * rhs[2];
-		T z = lhs[0] * rhs[1] - lhs[1] * rhs[0];
+	constexpr vector<T, 3> cross(const vector<T, 3>& a, const vector<T, 3>& b) {
+		T x = a[1] * b[2] - a[2] * b[1];
+		T y = a[2] * b[0] - a[0] * b[2];
+		T z = a[0] * b[1] - a[1] * b[0];
 		return make_vector<T>(x, y, z);
 	}
 
-	// FIXME: waar is permute voor nodig? 't is een soort van poor man's matrix
-	template<class T, std::size_t N, std::size_t M>
-	constexpr vector<T, M> permute(const vector<T, N>& lhs, const vector<std::size_t, M>& rhs) {
-		vector<T, M> result;
-
-		for (std::size_t i = 0; i < M; i++) {
-			result[i] = lhs[rhs[i]];
-		}
-
-		return result;
-	}
-
-	// FIXME: waar is coordinate_system precies voor?
 	template<class T>
-	constexpr void coordinate_system(const vector<T, 3>& i, vector<T, 3>& j, vector<T, 3>& k) {
+	constexpr void make_tangents(const vector<T, 3>& i, vector<T, 3>& j, vector<T, 3>& k) {
 		if (abs(i[0]) > abs(i[1])) {
 			j = normalize(make_vector<T>(-i[2], 0, i[0]));
 		} else {
@@ -322,10 +291,14 @@ namespace rt {
 		k = cross(i, j);
 	}
 
-	// FIXME: volgorde van arguments onduidelijk, betere namen?
 	template<class T, std::size_t N>
-	constexpr vector<T, N> face_forward(const vector<T, N>& lhs, const vector<T, N>& rhs) {
-		return dot(lhs, rhs) < 0 ? -lhs : lhs;
+	constexpr vector<T, N> lerp(const vector<T, N>& a, const vector<T, N>& b, const T& t) {
+		return a + t * (b - a);
+	}
+
+	template<class T, std::size_t N>
+	constexpr vector<T, N> align(const vector<T, N>& arg, const vector<T, N>& to) {
+		return dot(arg, to) < 0 ? -arg : arg;
 	}
 }
 

@@ -5,53 +5,48 @@
 
 namespace rt {
 	template<class T>
-	constexpr T floor(const T& value) {
-		// FIXME: dit, of "using std::floor" en dan gewoon "floor()"
-		// dat tweede lijdt misschien tot infinite recursion
-		return std::floor(value);
+	constexpr T floor(const T& arg) {
+		return std::floor(arg);
 	}
 
 	template<class T>
-	constexpr T ceil(const T& value) {
-		return std::ceil(value);
+	constexpr T ceil(const T& arg) {
+		return std::ceil(arg);
 	}
 
 	template<class T>
-	constexpr T abs(const T& value) {
-		return std::abs(value);
+	constexpr T abs(const T& arg) {
+		return std::abs(arg);
 	}
 
 	template<class T>
-	constexpr T& min(T& lhs, T& rhs) {
-		return lhs < rhs ? lhs : rhs;
+	constexpr T sqrt(const T& arg) {
+		return std::sqrt(arg);
 	}
 
 	template<class T>
-	constexpr const T& min(const T& lhs, const T& rhs) {
-		return lhs < rhs ? lhs : rhs;
+	constexpr T& min(T& a, T& b) {
+		return a < b ? a : b;
 	}
 
 	template<class T>
-	constexpr T& max(T& lhs, T& rhs) {
-		return lhs > rhs ? lhs : rhs;
+	constexpr const T& min(const T& a, const T& b) {
+		return a < b ? a : b;
 	}
 
 	template<class T>
-	constexpr const T& max(const T& lhs, const T& rhs) {
-		return lhs > rhs ? lhs : rhs;
+	constexpr T& max(T& a, T& b) {
+		return a > b ? a : b;
 	}
 
 	template<class T>
-	constexpr T sqrt(const T& value) {
-		return std::sqrt(value);
+	constexpr const T& max(const T& a, const T& b) {
+		return a > b ? a : b;
 	}
 
-	// FIXME: volgorde van arguments onduidelijk
-	// FIXME: moet lerp wel *zo* generic?
-	// FIXME: moeten alle functies in deze file eigenljk wel *zo* generic?
-	template<class T, class U>
-	constexpr U lerp(const T& time, const U& lhs, const U& rhs) {
-		return lhs * (1 - time) + rhs * time;
+	template<class T>
+	constexpr T lerp(const T& a, const T& b, const T& t) {
+		return a + t * (b - a);
 	}
 }
 
