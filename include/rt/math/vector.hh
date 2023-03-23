@@ -11,41 +11,30 @@ namespace rt {
 	private:
 		T elem[N];
 	public:
-		constexpr vector() = default;
+		vector() = default;
 
-		constexpr vector(const T& arg) {
+		vector(const T& arg) {
 			for (std::size_t i = 0; i < N; i++) {
 				elem[i] = arg;
 			}
 		}
 
-		template<class U>
-		constexpr explicit vector(const vector<U, N>& arg) {
-			for (std::size_t i = 0; i < N; i++) {
+		template<class U, std::size_t M>
+		explicit vector(const vector<U, M>& arg) {
+			for (std::size_t i = 0; i < min(N, M); i++) {
 				elem[i] = static_cast<T>(arg[i]);
 			}
 		}
 
-		constexpr T& operator[](std::size_t index) {
+		T& operator[](std::size_t index) {
 			return elem[index];
 		}
 
-		constexpr const T& operator[](std::size_t index) const {
+		const T& operator[](std::size_t index) const {
 			return elem[index];
 		}
 
-		template<std::size_t M>
-		constexpr vector<T, M> operator[](vector<std::size_t, M> index) const {
-			vector<T, M> out;
-
-			for (std::size_t i = 0; i < M; i++) {
-				out[i] = elem[index[i]];
-			}
-
-			return out;
-		}
-
-		constexpr friend bool operator==(const vector& a, const vector& b) {
+		friend bool operator==(const vector& a, const vector& b) {
 			for (std::size_t i = 0; i < N; i++) {
 				if (a[i] != b[i]) {
 					return false;
@@ -55,11 +44,11 @@ namespace rt {
 			return true;
 		}
 
-		constexpr friend bool operator!=(const vector& a, const vector& b) {
+		friend bool operator!=(const vector& a, const vector& b) {
 			return !(a == b);
 		}
 
-		constexpr vector operator-() const {
+		vector operator-() const {
 			vector out;
 
 			for (std::size_t i = 0; i < N; i++) {
@@ -69,7 +58,7 @@ namespace rt {
 			return out;
 		}
 
-		constexpr vector& operator+=(const vector& arg) {
+		vector& operator+=(const vector& arg) {
 			for (std::size_t i = 0; i < N; i++) {
 				elem[i] += arg[i];
 			}
@@ -77,7 +66,7 @@ namespace rt {
 			return *this;
 		}
 
-		constexpr vector& operator-=(const vector& arg) {
+		vector& operator-=(const vector& arg) {
 			for (std::size_t i = 0; i < N; i++) {
 				elem[i] -= arg[i];
 			}
@@ -85,7 +74,7 @@ namespace rt {
 			return *this;
 		}
 
-		constexpr vector& operator*=(const vector& arg) {
+		vector& operator*=(const vector& arg) {
 			for (std::size_t i = 0; i < N; i++) {
 				elem[i] *= arg[i];
 			}
@@ -93,7 +82,7 @@ namespace rt {
 			return *this;
 		}
 
-		constexpr vector& operator/=(const vector& arg) {
+		vector& operator/=(const vector& arg) {
 			for (std::size_t i = 0; i < N; i++) {
 				elem[i] /= arg[i];
 			}
@@ -101,25 +90,25 @@ namespace rt {
 			return *this;
 		}
 
-		constexpr friend vector operator+(vector a, const vector& b) {
+		friend vector operator+(vector a, const vector& b) {
 			return a += b;
 		}
 
-		constexpr friend vector operator-(vector a, const vector& b) {
+		friend vector operator-(vector a, const vector& b) {
 			return a -= b;
 		}
 
-		constexpr friend vector operator*(vector a, const vector& b) {
+		friend vector operator*(vector a, const vector& b) {
 			return a *= b;
 		}
 
-		constexpr friend vector operator/(vector a, const vector& b) {
+		friend vector operator/(vector a, const vector& b) {
 			return a /= b;
 		}
 	};
 
 	template<class T, class... Args>
-	constexpr vector<T, sizeof...(Args)> make_vector(const Args&... args) {
+	vector<T, sizeof...(Args)> make_vector(const Args&... args) {
 		T elem[] = { static_cast<T>(args)... };
 		vector<T, sizeof...(Args)> out;
 
@@ -130,8 +119,20 @@ namespace rt {
 		return out;
 	}
 
+	template<class T, class U, std::size_t N, class... Args>
+	vector<T, sizeof...(Args) + N> make_vector(const vector<U, N>& arg, const Args&... args) {
+		T elem[] = { static_cast<T>(args)... };
+		vector<T, sizeof...(Args) + N> out(arg);
+
+		for (std::size_t i = 0; i < sizeof...(Args); i++) {
+			out[N + i] = elem[i];
+		}
+		
+		return out;
+	}
+
 	template<class T, std::size_t N>
-	constexpr vector<T, N> floor(const vector<T, N>& arg) {
+	vector<T, N> floor(const vector<T, N>& arg) {
 		vector<T, N> out;
 
 		for (std::size_t i = 0; i < N; i++) {
@@ -142,7 +143,7 @@ namespace rt {
 	}
 
 	template<class T, std::size_t N>
-	constexpr vector<T, N> ceil(const vector<T, N>& arg) {
+	vector<T, N> ceil(const vector<T, N>& arg) {
 		vector<T, N> out;
 
 		for (std::size_t i = 0; i < N; i++) {
@@ -153,7 +154,7 @@ namespace rt {
 	}
 
 	template<class T, std::size_t N>
-	constexpr vector<T, N> abs(const vector<T, N>& arg) {
+	vector<T, N> abs(const vector<T, N>& arg) {
 		vector<T, N> out;
 
 		for (std::size_t i = 0; i < N; i++) {
@@ -164,7 +165,7 @@ namespace rt {
 	}
 
 	template<class T, std::size_t N>
-	constexpr vector<T, N> min(const vector<T, N>& a, const vector<T, N>& b) {
+	vector<T, N> min(const vector<T, N>& a, const vector<T, N>& b) {
 		vector<T, N> out;
 
 		for (std::size_t i = 0; i < N; i++) {
@@ -175,7 +176,7 @@ namespace rt {
 	}
 
 	template<class T, std::size_t N>
-	constexpr vector<T, N> max(const vector<T, N>& a, const vector<T, N>& b) {
+	vector<T, N> max(const vector<T, N>& a, const vector<T, N>& b) {
 		vector<T, N> out;
 
 		for (std::size_t i = 0; i < N; i++) {
@@ -186,7 +187,7 @@ namespace rt {
 	}
 
 	template<class T, std::size_t N>
-	constexpr std::size_t min_index(const vector<T, N>& arg) {
+	std::size_t min_index(const vector<T, N>& arg) {
 		std::size_t out = 0;
 
 		for (std::size_t i = 1; i < N; i++) {
@@ -199,7 +200,7 @@ namespace rt {
 	}
 
 	template<class T, std::size_t N>
-	constexpr std::size_t max_index(const vector<T, N>& arg) {
+	std::size_t max_index(const vector<T, N>& arg) {
 		std::size_t out = 0;
 
 		for (std::size_t i = 1; i < N; i++) {
@@ -212,68 +213,84 @@ namespace rt {
 	}
 
 	template<class T, std::size_t N>
-	constexpr T& min(vector<T, N>& arg) {
+	T& min(vector<T, N>& arg) {
 		return arg[min_index(arg)];
 	}
 
 	template<class T, std::size_t N>
-	constexpr const T& min(const vector<T, N>& arg) {
+	const T& min(const vector<T, N>& arg) {
 		return arg[min_index(arg)];
 	}
 
 	template<class T, std::size_t N>
-	constexpr T& max(vector<T, N>& arg) {
+	T& max(vector<T, N>& arg) {
 		return arg[max_index(arg)];
 	}
 
 	template<class T, std::size_t N>
-	constexpr const T& max(const vector<T, N>& arg) {
+	const T& max(const vector<T, N>& arg) {
 		return arg[max_index(arg)];
 	}
-
+	
 	template<class T, std::size_t N>
-	constexpr T dot(const vector<T, N>& a, const vector<T, N>& b) {
-		T out = 0;
+	T sum(const vector<T, N>& arg) {
+		T out = arg[0];
 
-		for (std::size_t i = 0; i < N; i++) {
-			out += a[i] * b[i];
+		for (std::size_t i = 1; i < N; i++) {
+			out += arg[i];
+		}
+
+		return out;
+	}
+	
+	template<class T, std::size_t N>
+	T product(const vector<T, N>& arg) {
+		T out = arg[0];
+
+		for (std::size_t i = 1; i < N; i++) {
+			out *= arg[i];
 		}
 
 		return out;
 	}
 
 	template<class T, std::size_t N>
-	constexpr T abs_dot(const vector<T, N>& a, const vector<T, N>& b) {
+	T dot(const vector<T, N>& a, const vector<T, N>& b) {
+		return sum(a * b);
+	}
+
+	template<class T, std::size_t N>
+	T abs_dot(const vector<T, N>& a, const vector<T, N>& b) {
 		return abs(dot(a, b));
 	}
 
 	template<class T, std::size_t N>
-	constexpr T length_squared(const vector<T, N>& arg) {
+	T length_squared(const vector<T, N>& arg) {
 		return dot(arg, arg);
 	}
 
 	template<class T, std::size_t N>
-	constexpr T length(const vector<T, N>& arg) {
+	T length(const vector<T, N>& arg) {
 		return sqrt(length_squared(arg));
 	}
 
 	template<class T, std::size_t N>
-	constexpr T distance_squared(const vector<T, N>& a, const vector<T, N>& b) {
+	T distance_squared(const vector<T, N>& a, const vector<T, N>& b) {
 		return length_squared(a - b);
 	}
 
 	template<class T, std::size_t N>
-	constexpr T distance(const vector<T, N>& a, const vector<T, N>& b) {
+	T distance(const vector<T, N>& a, const vector<T, N>& b) {
 		return length(a - b);
 	}
 
 	template<class T, std::size_t N>
-	constexpr vector<T, N> normalize(const vector<T, N>& arg) {
+	vector<T, N> normalize(const vector<T, N>& arg) {
 		return arg / length(arg);
 	}
 
 	template<class T>
-	constexpr vector<T, 3> cross(const vector<T, 3>& a, const vector<T, 3>& b) {
+	vector<T, 3> cross(const vector<T, 3>& a, const vector<T, 3>& b) {
 		T x = a[1] * b[2] - a[2] * b[1];
 		T y = a[2] * b[0] - a[0] * b[2];
 		T z = a[0] * b[1] - a[1] * b[0];
@@ -281,7 +298,7 @@ namespace rt {
 	}
 
 	template<class T>
-	constexpr void make_tangents(const vector<T, 3>& i, vector<T, 3>& j, vector<T, 3>& k) {
+	void tangents(const vector<T, 3>& i, vector<T, 3>& j, vector<T, 3>& k) {
 		if (abs(i[0]) > abs(i[1])) {
 			j = normalize(make_vector<T>(-i[2], 0, i[0]));
 		} else {
@@ -291,13 +308,24 @@ namespace rt {
 		k = cross(i, j);
 	}
 
+	template<class T, std::size_t N, std::size_t M>
+	vector<T, N> permute(const vector<T, M>& arg, const vector<std::size_t, N>& index) {
+		vector<T, N> out;
+
+		for (std::size_t i = 0; i < N; i++) {
+			out[i] = arg[index[i]];
+		}
+
+		return out;
+	}
+
 	template<class T, std::size_t N>
-	constexpr vector<T, N> lerp(const vector<T, N>& a, const vector<T, N>& b, const T& t) {
+	vector<T, N> lerp(const vector<T, N>& a, const vector<T, N>& b, const T& t) {
 		return a + t * (b - a);
 	}
 
 	template<class T, std::size_t N>
-	constexpr vector<T, N> align(const vector<T, N>& arg, const vector<T, N>& to) {
+	vector<T, N> align(const vector<T, N>& arg, const vector<T, N>& to) {
 		return dot(arg, to) < 0 ? -arg : arg;
 	}
 }

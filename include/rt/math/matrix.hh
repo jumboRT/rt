@@ -11,72 +11,116 @@ namespace rt {
 	private:
 		vector<vector<T, C>, R> rows;
 	public:
-		constexpr matrix() = default;
+		matrix() = default;
 
-		constexpr matrix(const T& arg) {
-			for (std::size_t i = 0; i < R; i++) {
-				for (std::size_t j = 0; j < C; j++) {
-					rows[i][j] = i == j ? arg : 0;
-				}
-			}
-		}
-
-		template<class U>
-		constexpr explicit matrix(const matrix<U, R, C>& arg) {
-			rows = static_cast<vector<vector<U, C>, R>>(arg.rows);
-		}
-
-		constexpr vector<T, C>& operator[](std::size_t index) {
+		vector<T, C>& operator[](std::size_t index) {
 			return rows[index];
 		}
 
-		constexpr const vector<T, C>& operator[](std::size_t index) const {
+		const vector<T, C>& operator[](std::size_t index) const {
 			return rows[index];
 		}
 
-		constexpr friend bool operator==(const matrix& a, const matrix& b) {
+		friend bool operator==(const matrix& a, const matrix& b) {
 			return a.rows == b.rows;
 		}
 
-		constexpr friend bool operator!=(const matrix& a, const matrix& b) {
+		friend bool operator!=(const matrix& a, const matrix& b) {
 			return !(a == b);
 		}
 	};
 
 	template<class T, std::size_t N>
-	constexpr matrix<T, N, N> inverse(const matrix<T, N, N>& arg) {
-		// TODO
-		return arg;
+	matrix<T, N, N> identity() {
+		matrix<T, N, N> out;
+
+		for (std::size_t i = 0; i < N; i++) {
+			out[i] = 0;
+			out[i][i] = 1;
+		}
+
+		return out;
 	}
 
 	template<class T, std::size_t R, std::size_t C>
-	constexpr matrix<T, R, C> transpose(const matrix<T, C, R>& arg) {
+	vector<T, R> column(const matrix<T, R, C>& arg, std::size_t index) {
+		vector<T, R> out;
+		
+		for (std::size_t i = 0; i < R; i++) {
+			out[i] = arg[i][index];
+		}
+
+		return out;
+	}
+
+	template<class T, std::size_t R, std::size_t C>
+	matrix<T, R, C> transpose(const matrix<T, C, R>& arg) {
 		matrix<T, R, C> out;
 
 		for (std::size_t i = 0; i < R; i++) {
-			for (std::size_t j = 0; j < C; j++) {
-				out[i][j] = arg[j][i];
-			}
+			out[i] = column(arg, i);
 		}
 		
 		return out;
 	}
+	
+	template<class T, std::size_t R, std::size_t C>
+	vector<T, R> operator*(const matrix<T, R, C>& a, const vector<T, C>& b) {
+		vector<T, R> out;
 
-	/*
-	 * A B C	F
-	 * C D E	G
-	 *			H
-	 */
+		for (std::size_t i = 0; i < R; i++) {
+			out[i] = dot(a[i], b);
+		}
 
-	template<class T, class U, std::size_t M, std::size_t N, std::size_t P>
-	constexpr auto operator*(const matrix<T, M, N> &lhs, const matrix<U, N, P> &rhs) -> matrix<decltype(lhs[0][0] * rhs[0][0]), M, P> {
-		//NOT DONE
-		matrix<decltype(lhs[0][0] * rhs[0][0]), M, P> result;
-		for (std::size_t i = 0; i < P; ++i)
-			for (std::size_t j = 0; i < N; ++j)
-				for (std::size_t c = 0; i < N; ++j)
-					result[j][i] += lhs[j][c] * rhs[c][i];
-		return result;
+		return out;
+	}
+
+	template<class T, std::size_t R, std::size_t C, std::size_t N>
+	matrix<T, R, C> operator*(const matrix<T, R, N>& a, const matrix<T, N, C>& b) {
+		matrix<T, R, C> out;
+		
+		for (std::size_t i = 0; i < R; i++) {
+			for (std::size_t j = 0; j < N; j++) {
+				out[i][j] = dot(a[i], column(b, j));
+			}
+		}
+
+		return out;
+	}
+
+	template<class T, std::size_t N>
+	matrix<T, N, N> inverse(matrix<T, N, N> arg) {
+		matrix<T, N, N> out = identity<T, N>();
+
+		for (std::size_t i = 0; i < N; i++) {
+			std::size_t index = i;
+			T value = abs(arg[i][i]);
+
+			for (std::size_t j = i + 1; j < N; j++) {
+				T tmp = abs(arg[j][i]);
+
+				if (tmp > value) {
+					index = j;
+					value = tmp;
+				}
+			}
+
+			swap(out[i], out[index]);
+			swap(arg[i], arg[index]);
+			out[i] /= arg[i][i];
+			arg[i] /= arg[i][i];
+			
+			for (std::size_t j = 0; j < i; j++) {
+				out[j] -= out[i] * arg[j][i];
+			}
+
+			for (std::size_t j = i + 1; j < N; j++) {
+				out[j] -= out[i] * arg[j][i];
+				arg[j] -= arg[i] * arg[j][i];
+			}
+		}
+
+		return out;
 	}
 }
 

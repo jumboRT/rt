@@ -8,7 +8,7 @@
 
 namespace rt {
 	template<class CharT, class T, std::size_t N>
-	constexpr std::basic_ostream<CharT>& operator<<(std::basic_ostream<CharT>& os, const vector<T, N>& arg) {
+	std::basic_ostream<CharT>& operator<<(std::basic_ostream<CharT>& os, const vector<T, N>& arg) {
 		const char *delim = "[";
 
 		for (std::size_t i = 0; i < N; i++) {
@@ -20,7 +20,7 @@ namespace rt {
 	}
 	
 	template<class CharT, class T, std::size_t R, std::size_t C>
-	constexpr std::basic_ostream<CharT>& operator<<(std::basic_ostream<CharT>& os, const matrix<T, R, C>& arg) {
+	std::basic_ostream<CharT>& operator<<(std::basic_ostream<CharT>& os, const matrix<T, R, C>& arg) {
 		const char *delim = "[";
 
 		for (std::size_t i = 0; i < R; i++) {
