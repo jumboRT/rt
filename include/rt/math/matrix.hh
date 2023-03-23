@@ -13,6 +13,13 @@ namespace rt {
 	public:
 		matrix() = default;
 
+		template<class U, std::size_t S, std::size_t D>
+		explicit matrix(const matrix<U, S, D>& arg) {
+			for (std::size_t i = 0; i < min(R, S); i++) {
+				rows[i] = static_cast<vector<T, C>>(arg[i]);
+			}
+		}
+
 		vector<T, C>& operator[](std::size_t index) {
 			return rows[index];
 		}
@@ -37,6 +44,44 @@ namespace rt {
 		for (std::size_t i = 0; i < N; i++) {
 			out[i] = 0;
 			out[i][i] = 1;
+		}
+
+		return out;
+	}
+
+	template<class T, std::size_t N, std::size_t M>
+	matrix<T, N, N> scale(const vector<T, M>& arg) {
+		matrix<T, N, N> out = identity<T, N>();
+
+		static_assert(N >= M, "matrix too small");
+
+		for (std::size_t i = 0; i < M; i++) {
+			out[i][i] = arg[i];
+		}
+
+		return out;
+	}
+
+	template<class T, std::size_t N>
+	matrix<T, N, N> rotate(T arg, std::size_t x, std::size_t y) {
+		matrix<T, N, N> out = identity<T, N>();
+
+		out[x][x] = cos(arg);
+		out[x][y] = -sin(arg);
+		out[y][x] = sin(arg);
+		out[y][y] = cos(arg);
+
+		return out;
+	}
+
+	template<class T, std::size_t N, std::size_t M>
+	matrix<T, N, N> translate(const vector<T, M>& arg) {
+		matrix<T, N, N> out = identity<T, N>();
+
+		static_assert(N >= M, "matrix too small");
+
+		for (std::size_t i = 0; i < M; i++) {
+			out[N - 1][i] = arg[i];
 		}
 
 		return out;
@@ -109,7 +154,7 @@ namespace rt {
 			swap(arg[i], arg[index]);
 			out[i] /= arg[i][i];
 			arg[i] /= arg[i][i];
-			
+
 			for (std::size_t j = 0; j < i; j++) {
 				out[j] -= out[i] * arg[j][i];
 			}
