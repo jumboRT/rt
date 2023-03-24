@@ -10,28 +10,30 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+list(APPEND RT_SRC src/test/assert.cc)
+
+list(APPEND RT_TEST test/math/vector.cc)
+list(APPEND RT_TEST test/math/matrix.cc)
+list(APPEND RT_TEST test/math/quadratic.cc)
+
+create_test_sourcelist(RT_TEST_SRC test.cc ${RT_TEST})
+
 project(rt VERSION 0.0.0 LANGUAGES CXX)
 
-add_library(rt src/test/assert.cc)
-target_include_directories(rt PUBLIC include)
-
-add_executable(rt-bin src/main.cc)
-target_link_libraries(rt-bin rt)
-set_target_properties(rt-bin PROPERTIES OUTPUT_NAME rt)
-
-add_executable(rt-test EXCLUDE_FROM_ALL src/test/main.cc src/test/tester.cc)
-target_link_libraries(rt-test rt)
+add_library(rt-base STATIC ${RT_SRC})
+target_include_directories(rt-base PUBLIC include)
+add_executable(rt src/main.cc)
+target_link_libraries(rt rt-base)
+add_executable(rt-test EXCLUDE_FROM_ALL ${RT_TEST_SRC})
+target_link_libraries(rt-test rt-base)
 
 include(CTest)
 
-function(rt_add_test name)
-	add_test(rt-${name} rt-test ${name})
-	set_tests_properties(rt-${name} PROPERTIES FIXTURES_REQUIRED rt-test)
-endfunction()
+add_test(build "${CMAKE_COMMAND}" --build "${CMAKE_BINARY_DIR}" --config "$<CONFIG>" --target rt-test)
+set_tests_properties(build PROPERTIES FIXTURES_SETUP build)
 
-add_test(rt-test "${CMAKE_COMMAND}" --build "${CMAKE_BINARY_DIR}" --config "$<CONFIG>" --target rt-test)
-set_tests_properties(rt-test PROPERTIES FIXTURES_SETUP rt-test)
-
-rt_add_test(vector)
-rt_add_test(matrix)
-rt_add_test(quadratic)
+foreach(test ${RT_TEST})
+	string(REGEX MATCH "^([^/]*/)*[^.]+" name ${test})
+	add_test(${name} rt-test ${name})
+	set_tests_properties(${name} PROPERTIES FIXTURES_REQUIRED build)
+endforeach()
