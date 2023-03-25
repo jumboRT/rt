@@ -43,7 +43,11 @@ namespace rt {
 		}
 
 		matrix operator-() const {
-			return matrix { -rows };
+			matrix out;
+
+			out.rows = -rows;
+
+			return out;
 		}
 
 		matrix& operator+=(const matrix& arg) {

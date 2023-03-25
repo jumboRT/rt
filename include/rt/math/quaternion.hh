@@ -47,7 +47,11 @@ namespace rt {
 		}
 
 		quaternion operator-() const {
-			return quaternion { -elem };
+			quaternion out;
+
+			out.elem = -elem;
+
+			return out;
 		}
 
 		quaternion& operator+=(const quaternion& arg) {

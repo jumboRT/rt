@@ -12,6 +12,6 @@
 // TODO: quaternions als (vector<T, 3>, T) ipv (vector<T, 4>)?
 
 int main() {
-	rt::quaternion<float> q0 = 1;
-	rt::vector<double, 4> q1(q0);
+	rt::matrix<float, 4, 4> q0 = 1;
+	-q0;
 }
