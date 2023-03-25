@@ -9,7 +9,7 @@ void test_math_matrix(int, char**) {
 	mat[1] = rt::make_vector<double>(2, 4);
 	inv = inverse(mat);
 
-	RT_ASSERT(mat * inv == identity);
-	RT_ASSERT(inv * mat == identity);
+	RT_ASSERT(mat(inv) == identity);
+	RT_ASSERT(inv(mat) == identity);
 	RT_ASSERT(mat == inverse(inv));
 }

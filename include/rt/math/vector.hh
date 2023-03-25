@@ -109,7 +109,7 @@ namespace rt {
 
 	template<class T, class... Args>
 	vector<T, sizeof...(Args)> make_vector(const Args&... args) {
-		T elem[] = { static_cast<T>(args)... };
+		T elem[] = { args... };
 		vector<T, sizeof...(Args)> out;
 
 		for (std::size_t i = 0; i < sizeof...(Args); i++) {
@@ -121,7 +121,7 @@ namespace rt {
 
 	template<class T, class U, std::size_t N, class... Args>
 	vector<T, sizeof...(Args) + N> make_vector(const vector<U, N>& arg, const Args&... args) {
-		T elem[] = { static_cast<T>(args)... };
+		T elem[] = { args... };
 		vector<T, sizeof...(Args) + N> out(arg);
 
 		for (std::size_t i = 0; i < sizeof...(Args); i++) {
@@ -296,6 +296,12 @@ namespace rt {
 		T z = a[0] * b[1] - a[1] * b[0];
 
 		return make_vector<T>(x, y, z);
+	}
+
+	// https://en.wikipedia.org/wiki/Rodrigues%27_rotation_formula
+	template<class T>
+	vector<T, 3> rotate(const vector<T, 3>& vec, const vector<T, 3>& axis, const T& theta) {
+		return vec * cos(theta) + cross(vec, axis) * sin(theta) + axis * dot(axis, vec) * (1 - cos(theta));
 	}
 
 	template<class T>

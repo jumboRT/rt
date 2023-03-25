@@ -13,6 +13,12 @@ namespace rt {
 	public:
 		matrix() = default;
 
+		matrix(const T& arg) {
+			for (std::size_t i = 0; i < R; i++) {
+				rows[i] = vector<T, C>(arg);
+			}
+		}
+
 		template<class U, std::size_t S, std::size_t D>
 		explicit matrix(const matrix<U, S, D>& arg) {
 			for (std::size_t i = 0; i < min(R, S); i++) {
@@ -34,6 +40,85 @@ namespace rt {
 
 		friend bool operator!=(const matrix& a, const matrix& b) {
 			return !(a == b);
+		}
+
+		matrix operator-() const {
+			return matrix { -rows };
+		}
+
+		matrix& operator+=(const matrix& arg) {
+			return rows += arg.rows, *this;
+		}
+
+		matrix& operator-=(const matrix& arg) {
+			return rows -= arg.rows, *this;
+		}
+
+		matrix& operator*=(const matrix& arg) {
+			return rows *= arg.rows, *this;
+		}
+
+		matrix& operator/=(const matrix& arg) {
+			return rows /= arg.rows, *this;
+		}
+
+		friend matrix operator+(matrix a, const matrix& b) {
+			return a += b;
+		}
+
+		friend matrix operator-(matrix a, const matrix& b) {
+			return a -= b;
+		}
+
+		friend matrix operator*(matrix a, const matrix& b) {
+			return a *= b;
+		}
+
+		friend matrix operator/(matrix a, const matrix& b) {
+			return a /= b;
+		}
+
+		vector<T, R> column(std::size_t index) const {
+			vector<T, R> out;
+			
+			for (std::size_t i = 0; i < R; i++) {
+				out[i] = rows[i][index];
+			}
+
+			return out;
+		}
+
+		matrix<T, C, R> transpose() const {
+			matrix<T, C, R> out;
+
+			for (std::size_t i = 0; i < C; i++) {
+				out[i] = column(i);
+			}
+			
+			return out;
+		}
+	
+		vector<T, R> operator()(const vector<T, C>& arg) const {
+			vector<T, R> out;
+
+			for (std::size_t i = 0; i < R; i++) {
+				out[i] = dot(rows[i], arg);
+			}
+
+			return out;
+		}
+
+		template<std::size_t N>
+		matrix<T, R, N> operator()(const matrix<T, C, N>& arg) const {
+			matrix<T, R, N> out;
+			
+			for (std::size_t i = 0; i < R; i++) {
+				for (std::size_t j = 0; j < N; j++) {
+					out[i][j] = dot(rows[i], arg.column(j));
+				}
+			}
+
+			return out;
 		}
 	};
 
@@ -63,13 +148,13 @@ namespace rt {
 	}
 
 	template<class T, std::size_t N>
-	matrix<T, N, N> rotate(T arg, std::size_t x, std::size_t y) {
+	matrix<T, N, N> rotate(std::size_t x, std::size_t y, const T& theta) {
 		matrix<T, N, N> out = identity<T, N>();
 
-		out[x][x] = cos(arg);
-		out[x][y] = -sin(arg);
-		out[y][x] = sin(arg);
-		out[y][y] = cos(arg);
+		out[x][x] = cos(theta);
+		out[x][y] = -sin(theta);
+		out[y][x] = sin(theta);
+		out[y][y] = cos(theta);
 
 		return out;
 	}
@@ -87,52 +172,7 @@ namespace rt {
 		return out;
 	}
 
-	template<class T, std::size_t R, std::size_t C>
-	vector<T, R> column(const matrix<T, R, C>& arg, std::size_t index) {
-		vector<T, R> out;
-		
-		for (std::size_t i = 0; i < R; i++) {
-			out[i] = arg[i][index];
-		}
-
-		return out;
-	}
-
-	template<class T, std::size_t R, std::size_t C>
-	matrix<T, R, C> transpose(const matrix<T, C, R>& arg) {
-		matrix<T, R, C> out;
-
-		for (std::size_t i = 0; i < R; i++) {
-			out[i] = column(arg, i);
-		}
-		
-		return out;
-	}
-	
-	template<class T, std::size_t R, std::size_t C>
-	vector<T, R> operator*(const matrix<T, R, C>& a, const vector<T, C>& b) {
-		vector<T, R> out;
-
-		for (std::size_t i = 0; i < R; i++) {
-			out[i] = dot(a[i], b);
-		}
-
-		return out;
-	}
-
-	template<class T, std::size_t R, std::size_t C, std::size_t N>
-	matrix<T, R, C> operator*(const matrix<T, R, N>& a, const matrix<T, N, C>& b) {
-		matrix<T, R, C> out;
-		
-		for (std::size_t i = 0; i < R; i++) {
-			for (std::size_t j = 0; j < N; j++) {
-				out[i][j] = dot(a[i], column(b, j));
-			}
-		}
-
-		return out;
-	}
-
+	// https://en.wikipedia.org/wiki/Gaussian_elimination
 	template<class T, std::size_t N>
 	matrix<T, N, N> inverse(matrix<T, N, N> arg) {
 		matrix<T, N, N> out = identity<T, N>();
