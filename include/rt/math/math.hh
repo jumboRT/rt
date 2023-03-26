@@ -6,7 +6,7 @@
 #include <cmath>
 
 namespace rt {
-	typedef float real;
+	typedef float float_t;
 
 	template<class T>
 	RT_DEVICE T floor(const T& arg) {

@@ -117,14 +117,14 @@ namespace rt {
 	using vec4 = vec<T, 4>;
 
 	template<std::size_t N>
-	using vecf = vec<real, N>;
+	using vecf = vec<float_t, N>;
 
 	template<std::size_t N>
 	using vecz = vec<std::size_t, N>;
 
-	using vec2f = vec2<real>;
-	using vec3f = vec3<real>;
-	using vec4f = vec4<real>;
+	using vec2f = vec2<float_t>;
+	using vec3f = vec3<float_t>;
+	using vec4f = vec4<float_t>;
 
 	using vec2z = vec2<std::size_t>;
 	using vec3z = vec3<std::size_t>;

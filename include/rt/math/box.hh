@@ -77,14 +77,14 @@ namespace rt {
 	using box4 = box<T, 4>;
 
 	template<std::size_t N>
-	using boxf = box<real, N>;
+	using boxf = box<float_t, N>;
 
 	template<std::size_t N>
 	using boxz = box<std::size_t, N>;
 
-	using box2f = box2<real>;
-	using box3f = box3<real>;
-	using box4f = box4<real>;
+	using box2f = box2<float_t>;
+	using box3f = box3<float_t>;
+	using box4f = box4<float_t>;
 
 	using box2z = box2<std::size_t>;
 	using box3z = box3<std::size_t>;

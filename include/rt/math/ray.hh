@@ -26,7 +26,7 @@ namespace rt {
 			time = static_cast<T>(arg.time);
 		}
 
-		RT_DEVICE vec<T, N> operator()(const real& t) const {
+		RT_DEVICE vec<T, N> operator()(const float_t& t) const {
 			return origin + direction * t;
 		}
 
@@ -49,11 +49,11 @@ namespace rt {
 	using ray4 = ray<T, 4>;
 
 	template<std::size_t N>
-	using rayf = ray<real, N>;
+	using rayf = ray<float_t, N>;
 
-	using ray2f = ray2<real>;
-	using ray3f = ray3<real>;
-	using ray4f = ray4<real>;
+	using ray2f = ray2<float_t>;
+	using ray3f = ray3<float_t>;
+	using ray4f = ray4<float_t>;
 }
 
 #endif

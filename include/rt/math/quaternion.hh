@@ -85,7 +85,7 @@ namespace rt {
 		}
 	};
 
-	using quatf = quat<real>;
+	using quatf = quat<float_t>;
 
 	template<class T>
 	RT_DEVICE T dot(const quat<T>& a, const quat<T>& b) {

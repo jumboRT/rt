@@ -8,9 +8,9 @@ namespace rt {
 
 	class sphere {
 	private:
-		real radius;
+		float_t radius;
 	public:
-		RT_DEVICE sphere(const real& radius);
+		RT_DEVICE sphere(const float_t& radius);
 		
 		RT_DEVICE friend bool intersect(const sphere& s, const ray3f& r, intersection& i);
 	};

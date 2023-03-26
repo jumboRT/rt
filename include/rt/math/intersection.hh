@@ -8,7 +8,7 @@ namespace rt {
 	public:
 		vec3f point;
 		vec3f normal;
-		real time;
+		float_t time;
 	};
 }
 

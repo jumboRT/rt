@@ -3,14 +3,14 @@
 #include "rt/math/intersection.hh"
 
 namespace rt {
-	RT_DEVICE sphere::sphere(const real& radius) {
+	RT_DEVICE sphere::sphere(const float_t& radius) {
 		this->radius = radius;
 	}
 
 	RT_DEVICE bool intersect(const sphere& s, const ray3f& r, intersection& i) {
-		real a = 1;
-		real b = 2 * dot(r.origin, r.direction);
-		real c = length_squared(r.origin) - s.radius * s.radius;
+		float_t a = 1;
+		float_t b = 2 * dot(r.origin, r.direction);
+		float_t c = length_squared(r.origin) - s.radius * s.radius;
 
 		if (!quadratic_intersect(a, b, c, i.time)) {
 			return false;

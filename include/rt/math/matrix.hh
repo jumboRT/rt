@@ -138,11 +138,11 @@ namespace rt {
 	using mat4 = mat<T, 4, 4>;
 
 	template<std::size_t N, std::size_t M = N>
-	using matf = mat<real, N, M>;
+	using matf = mat<float_t, N, M>;
 
-	using mat2f = mat2<real>;
-	using mat3f = mat3<real>;
-	using mat4f = mat4<real>;
+	using mat2f = mat2<float_t>;
+	using mat3f = mat3<float_t>;
+	using mat4f = mat4<float_t>;
 
 	template<class T, std::size_t N>
 	RT_DEVICE mat<T, N, N> identity() {
