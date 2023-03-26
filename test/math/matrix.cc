@@ -2,11 +2,11 @@
 #include "rt/math/matrix.hh"
 
 void test_math_matrix(int, char**) {
-	rt::matrix<double, 2, 2> identity, mat, inv;
+	rt::mat2f identity, mat, inv;
 
-	identity = rt::identity<double, 2>();
-	mat[0] = rt::make_vector<double>(1, 3);
-	mat[1] = rt::make_vector<double>(2, 4);
+	identity = rt::identity<rt::real, 2>();
+	mat[0] = rt::vector<rt::real>(1, 3);
+	mat[1] = rt::vector<rt::real>(2, 4);
 	inv = inverse(mat);
 
 	RT_ASSERT(mat(inv) == identity);

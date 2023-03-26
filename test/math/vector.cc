@@ -2,9 +2,9 @@
 #include "rt/math/vector.hh"
 
 void test_math_vector(int, char**) {
-	rt::vector<double, 3> i, j, k;
+	rt::vec3f i, j, k;
 
-	i = rt::make_vector<double>(1, 2, 3);
+	i = rt::vector<rt::real>(1, 2, 3);
 	tangents(i, j, k);
 
 	RT_ASSERT(dot(i, j) == 0);

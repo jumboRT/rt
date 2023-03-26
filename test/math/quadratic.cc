@@ -2,9 +2,12 @@
 #include "rt/math/quadratic.hh"
 
 void test_math_quadratic(int, char**) {
-	double t0, t1;
+	rt::real t0, t1;
+	rt::real a = 0.5f;
+	rt::real b = -2.5f;
+	rt::real c = 2.0f;
 
-	RT_ASSERT(rt::quadratic(0.5, -2.5, 2.0, t0, t1));
+	RT_ASSERT(rt::quadratic(a, b, c, t0, t1));
 	RT_ASSERT(t0 == 1);
 	RT_ASSERT(t1 == 4);
 }

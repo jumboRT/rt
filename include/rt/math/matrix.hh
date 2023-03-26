@@ -5,85 +5,87 @@
 
 #include <cstddef>
 
+// TODO: meer transforms (look-at, rodrigues', etc.)
+
 namespace rt {
 	template<class T, std::size_t R, std::size_t C>
-	class matrix {
+	class mat {
 	private:
-		vector<vector<T, C>, R> rows;
+		vec<vec<T, C>, R> rows;
 	public:
-		matrix() = default;
+		mat() = default;
 
-		matrix(const T& arg) {
+		RT_DEVICE mat(const T& arg) {
 			for (std::size_t i = 0; i < R; i++) {
-				rows[i] = vector<T, C>(arg);
+				rows[i] = vec<T, C>(arg);
 			}
 		}
 
 		template<class U, std::size_t S, std::size_t D>
-		explicit matrix(const matrix<U, S, D>& arg) {
+		RT_DEVICE explicit mat(const mat<U, S, D>& arg) {
 			for (std::size_t i = 0; i < min(R, S); i++) {
-				rows[i] = static_cast<vector<T, C>>(arg[i]);
+				rows[i] = static_cast<vec<T, C>>(arg[i]);
 			}
 		}
 
-		vector<T, C>& operator[](std::size_t index) {
+		RT_DEVICE vec<T, C>& operator[](std::size_t index) {
 			return rows[index];
 		}
 
-		const vector<T, C>& operator[](std::size_t index) const {
+		RT_DEVICE const vec<T, C>& operator[](std::size_t index) const {
 			return rows[index];
 		}
 
-		friend bool operator==(const matrix& a, const matrix& b) {
+		RT_DEVICE friend bool operator==(const mat& a, const mat& b) {
 			return a.rows == b.rows;
 		}
 
-		friend bool operator!=(const matrix& a, const matrix& b) {
+		RT_DEVICE friend bool operator!=(const mat& a, const mat& b) {
 			return !(a == b);
 		}
 
-		matrix operator-() const {
-			matrix out;
+		RT_DEVICE mat operator-() const {
+			mat out;
 
 			out.rows = -rows;
 
 			return out;
 		}
 
-		matrix& operator+=(const matrix& arg) {
+		RT_DEVICE mat& operator+=(const mat& arg) {
 			return rows += arg.rows, *this;
 		}
 
-		matrix& operator-=(const matrix& arg) {
+		RT_DEVICE mat& operator-=(const mat& arg) {
 			return rows -= arg.rows, *this;
 		}
 
-		matrix& operator*=(const matrix& arg) {
+		RT_DEVICE mat& operator*=(const T& arg) {
 			return rows *= arg.rows, *this;
 		}
 
-		matrix& operator/=(const matrix& arg) {
+		RT_DEVICE mat& operator/=(const T& arg) {
 			return rows /= arg.rows, *this;
 		}
 
-		friend matrix operator+(matrix a, const matrix& b) {
+		RT_DEVICE friend mat operator+(mat a, const mat& b) {
 			return a += b;
 		}
 
-		friend matrix operator-(matrix a, const matrix& b) {
+		RT_DEVICE friend mat operator-(mat a, const mat& b) {
 			return a -= b;
 		}
 
-		friend matrix operator*(matrix a, const matrix& b) {
+		RT_DEVICE friend mat operator*(mat a, const T& b) {
 			return a *= b;
 		}
 
-		friend matrix operator/(matrix a, const matrix& b) {
+		RT_DEVICE friend mat operator/(mat a, const T& b) {
 			return a /= b;
 		}
 
-		vector<T, R> column(std::size_t index) const {
-			vector<T, R> out;
+		RT_DEVICE vec<T, R> column(std::size_t index) const {
+			vec<T, R> out;
 			
 			for (std::size_t i = 0; i < R; i++) {
 				out[i] = rows[i][index];
@@ -92,8 +94,8 @@ namespace rt {
 			return out;
 		}
 
-		matrix<T, C, R> transpose() const {
-			matrix<T, C, R> out;
+		RT_DEVICE mat<T, C, R> transpose() const {
+			mat<T, C, R> out;
 
 			for (std::size_t i = 0; i < C; i++) {
 				out[i] = column(i);
@@ -102,8 +104,8 @@ namespace rt {
 			return out;
 		}
 	
-		vector<T, R> operator()(const vector<T, C>& arg) const {
-			vector<T, R> out;
+		RT_DEVICE vec<T, R> operator()(const vec<T, C>& arg) const {
+			vec<T, R> out;
 
 			for (std::size_t i = 0; i < R; i++) {
 				out[i] = dot(rows[i], arg);
@@ -113,8 +115,8 @@ namespace rt {
 		}
 
 		template<std::size_t N>
-		matrix<T, R, N> operator()(const matrix<T, C, N>& arg) const {
-			matrix<T, R, N> out;
+		RT_DEVICE mat<T, R, N> operator()(const mat<T, C, N>& arg) const {
+			mat<T, R, N> out;
 			
 			for (std::size_t i = 0; i < R; i++) {
 				for (std::size_t j = 0; j < N; j++) {
@@ -125,10 +127,26 @@ namespace rt {
 			return out;
 		}
 	};
+	
+	template<class T>
+	using mat2 = mat<T, 2, 2>;
+
+	template<class T>
+	using mat3 = mat<T, 3, 3>;
+
+	template<class T>
+	using mat4 = mat<T, 4, 4>;
+
+	template<std::size_t N, std::size_t M = N>
+	using matf = mat<real, N, M>;
+
+	using mat2f = mat2<real>;
+	using mat3f = mat3<real>;
+	using mat4f = mat4<real>;
 
 	template<class T, std::size_t N>
-	matrix<T, N, N> identity() {
-		matrix<T, N, N> out;
+	RT_DEVICE mat<T, N, N> identity() {
+		mat<T, N, N> out;
 
 		for (std::size_t i = 0; i < N; i++) {
 			out[i] = 0;
@@ -139,8 +157,8 @@ namespace rt {
 	}
 
 	template<class T, std::size_t N, std::size_t M>
-	matrix<T, N, N> scale(const vector<T, M>& arg) {
-		matrix<T, N, N> out = identity<T, N>();
+	RT_DEVICE mat<T, N, N> scale(const vec<T, M>& arg) {
+		mat<T, N, N> out = identity<T, N>();
 
 		static_assert(N >= M, "matrix too small");
 
@@ -152,8 +170,8 @@ namespace rt {
 	}
 
 	template<class T, std::size_t N>
-	matrix<T, N, N> rotate(std::size_t x, std::size_t y, const T& theta) {
-		matrix<T, N, N> out = identity<T, N>();
+	RT_DEVICE mat<T, N, N> rotate(std::size_t x, std::size_t y, const T& theta) {
+		mat<T, N, N> out = identity<T, N>();
 
 		out[x][x] = cos(theta);
 		out[x][y] = -sin(theta);
@@ -164,8 +182,8 @@ namespace rt {
 	}
 
 	template<class T, std::size_t N, std::size_t M>
-	matrix<T, N, N> translate(const vector<T, M>& arg) {
-		matrix<T, N, N> out = identity<T, N>();
+	RT_DEVICE mat<T, N, N> translate(const vec<T, M>& arg) {
+		mat<T, N, N> out = identity<T, N>();
 
 		static_assert(N >= M, "matrix too small");
 
@@ -178,8 +196,8 @@ namespace rt {
 
 	// https://en.wikipedia.org/wiki/Gaussian_elimination
 	template<class T, std::size_t N>
-	matrix<T, N, N> inverse(matrix<T, N, N> arg) {
-		matrix<T, N, N> out = identity<T, N>();
+	RT_DEVICE mat<T, N, N> inverse(mat<T, N, N> arg) {
+		mat<T, N, N> out = identity<T, N>();
 
 		for (std::size_t i = 0; i < N; i++) {
 			std::size_t index = i;

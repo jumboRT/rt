@@ -3,93 +3,97 @@
 
 #include "rt/math/vector.hh"
 
+// TODO: meer quaternion operations
+
 namespace rt {
 	template<class T>
-	class quaternion {
+	class quat {
 	private:
-		vector<T, 4> elem;
+		vec4<T> elem;
 	public:
-		quaternion() = default;
+		quat() = default;
 
-		quaternion(const T& arg) {
+		RT_DEVICE quat(const T& arg) {
 			elem = arg;
 		}
 
 		template<class U>
-		explicit quaternion(const vector<U, 4>& arg) {
-			elem = static_cast<vector<T, 4>>(arg);
+		RT_DEVICE explicit quat(const vec4<U>& arg) {
+			elem = static_cast<vec4<T>>(arg);
 		}
 
 		template<class U>
-		explicit quaternion(const quaternion<U>& arg) {
-			elem = static_cast<vector<T, 4>>(arg);
+		RT_DEVICE explicit quat(const quat<U>& arg) {
+			elem = static_cast<vec4<T>>(arg);
 		}
 
 		template<class U>
-		explicit operator vector<U, 4>() const {
-			return static_cast<vector<U, 4>>(elem);
+		RT_DEVICE explicit operator vec4<U>() const {
+			return static_cast<vec4<U>>(elem);
 		}
 
-		T& operator[](std::size_t index) {
+		RT_DEVICE T& operator[](std::size_t index) {
 			return elem[index];
 		}
 
-		const T& operator[](std::size_t index) const {
+		RT_DEVICE const T& operator[](std::size_t index) const {
 			return elem[index];
 		}
 
-		friend bool operator==(const quaternion& a, const quaternion& b) {
+		RT_DEVICE friend bool operator==(const quat& a, const quat& b) {
 			return a.elem == b.elem;
 		}
 
-		friend bool operator!=(const quaternion& a, const quaternion& b) {
+		RT_DEVICE friend bool operator!=(const quat& a, const quat& b) {
 			return !(a == b);
 		}
 
-		quaternion operator-() const {
-			quaternion out;
+		RT_DEVICE quat operator-() const {
+			quat out;
 
 			out.elem = -elem;
 
 			return out;
 		}
 
-		quaternion& operator+=(const quaternion& arg) {
+		RT_DEVICE quat& operator+=(const quat& arg) {
 			return elem += arg.elem, *this;
 		}
 
-		quaternion& operator-=(const quaternion& arg) {
+		RT_DEVICE quat& operator-=(const quat& arg) {
 			return elem -= arg.elem, *this;
 		}
 
-		quaternion& operator*=(const quaternion& arg) {
+		RT_DEVICE quat& operator*=(const quat& arg) {
 			return elem *= arg.elem, *this;
 		}
 
-		quaternion& operator/=(const quaternion& arg) {
+		RT_DEVICE quat& operator/=(const quat& arg) {
 			return elem /= arg.elem, *this;
 		}
 
-		friend quaternion operator+(quaternion a, const quaternion& b) {
+		RT_DEVICE friend quat operator+(quat a, const quat& b) {
 			return a += b;
 		}
 
-		friend quaternion operator-(quaternion a, const quaternion& b) {
+		RT_DEVICE friend quat operator-(quat a, const quat& b) {
 			return a -= b;
 		}
 
-		friend quaternion operator*(quaternion a, const quaternion& b) {
+		RT_DEVICE friend quat operator*(quat a, const quat& b) {
 			return a *= b;
 		}
 
-		friend quaternion operator/(quaternion a, const quaternion& b) {
+		RT_DEVICE friend quat operator/(quat a, const quat& b) {
 			return a /= b;
 		}
 	};
 
+	using quatf = quat<real>;
+
 	template<class T>
-	T dot(const quaternion<T>& a, const quaternion<T>& b) {
-		return dot(vector<T, 4>(a), vector<T, 4>(b));
+	RT_DEVICE T dot(const quat<T>& a, const quat<T>& b) {
+		return dot(vec4<T>(a), vec4<T>(b));
 	}
 }
 
