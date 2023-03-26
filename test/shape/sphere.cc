@@ -11,7 +11,7 @@ void test_shape_sphere(int, char**) {
 	rt::ray3f ray(origin, -normal, 0);
 	rt::sphere sphere(1);
 
-	sphere.intersect(ray, i);
+	intersect(sphere, ray, i);
 
 	RT_ASSERT(rt::abs(i.time - rt::sqrt(3.0f) + 1) <= RT_EPSILON);
 	RT_ASSERT(rt::distance(i.point, normal) <= RT_EPSILON);

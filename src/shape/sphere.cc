@@ -7,17 +7,17 @@ namespace rt {
 		this->radius = radius;
 	}
 
-	RT_DEVICE bool sphere::intersect(const ray3f& r, intersection& i) const {
+	RT_DEVICE bool intersect(const sphere& s, const ray3f& r, intersection& i) {
 		real a = 1;
 		real b = 2 * dot(r.origin, r.direction);
-		real c = length_squared(r.origin) - radius * radius;
+		real c = length_squared(r.origin) - s.radius * s.radius;
 
 		if (!quadratic_intersect(a, b, c, i.time)) {
 			return false;
 		}
 
 		i.normal = normalize(r(i.time));
-		i.point = i.normal * radius;
+		i.point = i.normal * s.radius;
 
 		return true;
 	}

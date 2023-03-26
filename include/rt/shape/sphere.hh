@@ -11,8 +11,8 @@ namespace rt {
 		real radius;
 	public:
 		RT_DEVICE sphere(const real& radius);
-
-		RT_DEVICE bool intersect(const ray3f& r, intersection& i) const;
+		
+		RT_DEVICE friend bool intersect(const sphere& s, const ray3f& r, intersection& i);
 	};
 }
 

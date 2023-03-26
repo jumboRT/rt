@@ -37,19 +37,19 @@ namespace rt {
 			return length;
 		}
 
-		iterator begin() {
+		iterator begin() const {
 			return ptr;
 		}
 
-		iterator end() {
+		iterator end() const {
 			return ptr + size();
 		}
 
-		reverse_iterator rbegin() {
+		reverse_iterator rbegin() const {
 			return reverse_iterator(end());
 		}
 
-		reverse_iterator rend() {
+		reverse_iterator rend() const {
 			return reverse_iterator(begin());
 		}
 	};

@@ -49,11 +49,7 @@ namespace rt {
 		}
 
 		RT_DEVICE quat operator-() const {
-			quat out;
-
-			out.elem = -elem;
-
-			return out;
+			return quat(-elem);
 		}
 
 		RT_DEVICE quat& operator+=(const quat& arg) {

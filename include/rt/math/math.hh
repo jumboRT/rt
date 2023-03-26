@@ -1,7 +1,7 @@
 #ifndef RT_MATH_MATH_HH
 #define RT_MATH_MATH_HH
 
-#include "rt/util/cuda.hh"
+#include "rt/util/util.hh"
 
 #include <cmath>
 
@@ -71,13 +71,6 @@ namespace rt {
 	template<class T>
 	RT_DEVICE T lerp(const T& a, const T& b, const T& t) {
 		return a + t * (b - a);
-	}
-
-	template<class T>
-	RT_DEVICE void swap(T& a, T& b) {
-		T tmp = a;
-		a = b;
-		b = tmp;
 	}
 }
 

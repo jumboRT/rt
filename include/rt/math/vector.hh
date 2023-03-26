@@ -350,6 +350,11 @@ namespace rt {
 	}
 
 	template<class T, std::size_t N>
+	RT_DEVICE vec<T, N> lerp(const vec<T, N>& a, const vec<T, N>& b, const vec<T, N>& t) {
+		return a + t * (b - a);
+	}
+
+	template<class T, std::size_t N>
 	RT_DEVICE vec<T, N> lerp(const vec<T, N>& a, const vec<T, N>& b, const T& t) {
 		return a + t * (b - a);
 	}

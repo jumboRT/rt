@@ -4,7 +4,6 @@
 #include <tuple>
 #include <iterator>
 #include <utility>
-#include <algorithm>
 #include <type_traits>
 
 namespace rt {
