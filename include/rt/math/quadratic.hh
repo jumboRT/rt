@@ -41,9 +41,9 @@ namespace rt {
 		if (!quadratic(a, b, c, t0, t1)) {
 			return false;
 		} else if (t0 > 0) {
-			t = t0;
+			t = std::move(t0);
 		} else if (t1 > 0) {
-			t = t1;
+			t = std::move(t1);
 		} else {
 			return false;
 		}

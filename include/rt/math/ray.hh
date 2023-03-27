@@ -13,10 +13,10 @@ namespace rt {
 
 		ray() = default;
 
-		RT_DEVICE ray(const vec<T, N>& origin, const vec<T, N>& direction, const T& time) {
-			this->origin = origin;
-			this->direction = direction;
-			this->time = time;
+		ray(vec<T, N> origin, vec<T, N> direction, T time) {
+			this->origin = std::move(origin);
+			this->direction = std::move(direction);
+			this->time = std::move(time);
 		}
 
 		template<class U, std::size_t M>

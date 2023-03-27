@@ -3,8 +3,8 @@
 #include "rt/math/intersection.hh"
 
 namespace rt {
-	RT_DEVICE sphere::sphere(const float_t& radius) {
-		this->radius = radius;
+	RT_DEVICE sphere::sphere(float_t radius) {
+		this->radius = std::move(radius);
 	}
 
 	RT_DEVICE bool intersect(const sphere& s, const ray3f& r, intersection& i) {

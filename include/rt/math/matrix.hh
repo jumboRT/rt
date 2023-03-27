@@ -8,23 +8,34 @@
 // TODO: meer transforms (look-at, rodrigues', etc.)
 
 namespace rt {
-	template<class T, std::size_t R, std::size_t C>
+	template<class T, std::size_t R, std::size_t C = R>
 	class mat {
 	private:
 		vec<vec<T, C>, R> rows;
 	public:
 		mat() = default;
 
-		RT_DEVICE mat(const T& arg) {
-			for (std::size_t i = 0; i < R; i++) {
-				rows[i] = vec<T, C>(arg);
-			}
-		}
-
 		template<class U, std::size_t S, std::size_t D>
 		RT_DEVICE explicit mat(const mat<U, S, D>& arg) {
 			for (std::size_t i = 0; i < min(R, S); i++) {
 				rows[i] = static_cast<vec<T, C>>(arg[i]);
+			}
+		}
+
+		RT_DEVICE mat(const T& val) {
+			for (std::size_t i = 0; i < R; i++) {
+				rows[i] = val;
+			}
+		}
+
+		template<class U, std::size_t S, std::size_t D>
+		RT_DEVICE explicit mat(const mat<U, S, D>& arg, const T& val) {
+			for (std::size_t i = 0; i < min(R, S); i++) {
+				rows[i] = vec<T, C>(arg[i], val);
+			}
+			
+			for (std::size_t i = S; i < R; i++) {
+				rows[i] = val;
 			}
 		}
 
@@ -126,16 +137,59 @@ namespace rt {
 
 			return out;
 		}
+
+		RT_DEVICE static mat identity() {
+			mat out = 0;
+
+			for (std::size_t i = 0; i < min(R, C); i++) {
+				out[i][i] = 1;
+			}
+
+			return out;
+		}
+
+		template<std::size_t N>
+		RT_DEVICE static mat scale(const vec<T, N>& arg) {
+			mat out = identity();
+
+			for (std::size_t i = 0; i < min(N, min(R, C)); i++) {
+				out[i][i] = arg[i];
+			}
+
+			return out;
+		}
+
+		RT_DEVICE static mat rotate(std::size_t x, std::size_t y, const T& theta) {
+			mat out = identity();
+
+			out[x][x] = cos(theta);
+			out[x][y] = -sin(theta);
+			out[y][x] = sin(theta);
+			out[y][y] = cos(theta);
+
+			return out;
+		}
+
+		template<std::size_t N>
+		RT_DEVICE static mat translate(const vec<T, N>& arg) {
+			mat<T, N, N> out = identity();
+
+			for (std::size_t i = 0; i < min(N, C); i++) {
+				out[N - 1][i] = arg[i];
+			}
+
+			return out;
+		}
 	};
 	
 	template<class T>
-	using mat2 = mat<T, 2, 2>;
+	using mat2 = mat<T, 2>;
 
 	template<class T>
-	using mat3 = mat<T, 3, 3>;
+	using mat3 = mat<T, 3>;
 
 	template<class T>
-	using mat4 = mat<T, 4, 4>;
+	using mat4 = mat<T, 4>;
 
 	template<std::size_t N, std::size_t M = N>
 	using matf = mat<float_t, N, M>;
@@ -144,60 +198,10 @@ namespace rt {
 	using mat3f = mat3<float_t>;
 	using mat4f = mat4<float_t>;
 
-	template<class T, std::size_t N>
-	RT_DEVICE mat<T, N, N> identity() {
-		mat<T, N, N> out;
-
-		for (std::size_t i = 0; i < N; i++) {
-			out[i] = 0;
-			out[i][i] = 1;
-		}
-
-		return out;
-	}
-
-	template<class T, std::size_t N, std::size_t M>
-	RT_DEVICE mat<T, N, N> scale(const vec<T, M>& arg) {
-		mat<T, N, N> out = identity<T, N>();
-
-		static_assert(N >= M, "matrix too small");
-
-		for (std::size_t i = 0; i < M; i++) {
-			out[i][i] = arg[i];
-		}
-
-		return out;
-	}
-
-	template<class T, std::size_t N>
-	RT_DEVICE mat<T, N, N> rotate(std::size_t x, std::size_t y, const T& theta) {
-		mat<T, N, N> out = identity<T, N>();
-
-		out[x][x] = cos(theta);
-		out[x][y] = -sin(theta);
-		out[y][x] = sin(theta);
-		out[y][y] = cos(theta);
-
-		return out;
-	}
-
-	template<class T, std::size_t N, std::size_t M>
-	RT_DEVICE mat<T, N, N> translate(const vec<T, M>& arg) {
-		mat<T, N, N> out = identity<T, N>();
-
-		static_assert(N >= M, "matrix too small");
-
-		for (std::size_t i = 0; i < M; i++) {
-			out[N - 1][i] = arg[i];
-		}
-
-		return out;
-	}
-
 	// https://en.wikipedia.org/wiki/Gaussian_elimination
 	template<class T, std::size_t N>
-	RT_DEVICE mat<T, N, N> inverse(mat<T, N, N> arg) {
-		mat<T, N, N> out = identity<T, N>();
+	RT_DEVICE mat<T, N> inverse(mat<T, N> arg) {
+		mat<T, N> out = mat<T, N>::identity();
 
 		for (std::size_t i = 0; i < N; i++) {
 			std::size_t index = i;
@@ -208,7 +212,7 @@ namespace rt {
 
 				if (tmp > value) {
 					index = j;
-					value = tmp;
+					value = std::move(tmp);
 				}
 			}
 

@@ -44,33 +44,58 @@ namespace rt {
 	}
 
 	template<class T>
+	RT_DEVICE T asin(const T& arg) {
+		return std::asin(arg);
+	}
+
+	template<class T>
+	RT_DEVICE T acos(const T& arg) {
+		return std::acos(arg);
+	}
+
+	template<class T>
+	RT_DEVICE T atan(const T& arg) {
+		return std::atan(arg);
+	}
+
+	template<class T>
 	RT_DEVICE T fma(const T& a, const T& b, const T& c) {
 		return std::fma(a, b, c);
 	}
 
 	template<class T>
-	RT_DEVICE T& min(T& a, T& b) {
+	RT_DEVICE constexpr T& min(T& a, T& b) {
 		return a < b ? a : b;
 	}
 
 	template<class T>
-	RT_DEVICE const T& min(const T& a, const T& b) {
+	RT_DEVICE constexpr const T& min(const T& a, const T& b) {
 		return a < b ? a : b;
 	}
 
 	template<class T>
-	RT_DEVICE T& max(T& a, T& b) {
+	RT_DEVICE constexpr T& max(T& a, T& b) {
 		return a > b ? a : b;
 	}
 
 	template<class T>
-	RT_DEVICE const T& max(const T& a, const T& b) {
+	RT_DEVICE constexpr const T& max(const T& a, const T& b) {
 		return a > b ? a : b;
+	}
+
+	template<class T>
+	RT_DEVICE constexpr T& clamp(T& a, T& b, T& c) {
+		return min(max(a, b), c);
+	}
+
+	template<class T>
+	RT_DEVICE constexpr const T& clamp(const T& a, const T& b, const T& c) {
+		return min(max(a, b), c);
 	}
 
 	template<class T>
 	RT_DEVICE T lerp(const T& a, const T& b, const T& t) {
-		return a + t * (b - a);
+		return fma(t, b - a, a);
 	}
 }
 

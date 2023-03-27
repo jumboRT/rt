@@ -4,7 +4,7 @@
 void test_math_vector(int, char**) {
 	rt::vec3f i, j, k;
 
-	i = rt::vector<rt::real>(1, 2, 3);
+	i = rt::vec3f(1, 2, 3);
 	tangents(i, j, k);
 
 	RT_ASSERT(dot(i, j) == 0);

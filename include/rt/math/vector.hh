@@ -13,16 +13,49 @@ namespace rt {
 	public:
 		vec() = default;
 
-		RT_DEVICE vec(const T& arg) {
-			for (std::size_t i = 0; i < N; i++) {
-				elem[i] = arg;
-			}
-		}
-
 		template<class U, std::size_t M>
 		RT_DEVICE explicit vec(const vec<U, M>& arg) {
 			for (std::size_t i = 0; i < min(N, M); i++) {
 				elem[i] = static_cast<T>(arg[i]);
+			}
+		}
+
+		RT_DEVICE vec(const T& val) {
+			for (std::size_t i = 0; i < N; i++) {
+				elem[i] = val;
+			}
+		}
+
+		template<class U, std::size_t M>
+		RT_DEVICE explicit vec(const vec<U, M>& arg, const T& val) {
+			for (std::size_t i = 0; i < min(N, M); i++) {
+				elem[i] = static_cast<T>(arg[i]);
+			}
+
+			for (std::size_t i = M; i < N; i++) {
+				elem[i] = val;
+			}
+		}
+
+		template<class... Args, class = typename std::enable_if<(N == sizeof...(Args))>::type>
+		RT_DEVICE vec(Args&&... args) {
+			T elem[] = { [&]() -> T { return std::forward<Args>(args); }()... };
+			
+			for (std::size_t i = 0; i < N; i++) {
+				this->elem[i] = std::move(elem[i]);
+			}
+		}
+
+		template<class U, std::size_t M, class... Args, class = typename std::enable_if<(N == M + sizeof...(Args))>::type>
+		RT_DEVICE explicit vec(const vec<U, M>& arg, Args&&... args) {
+			T elem[] = { [&]() -> T { return std::forward<Args>(args); }()... };
+
+			for (std::size_t i = 0; i < M; i++) {
+				this->elem[i] = static_cast<T>(arg[i]);
+			}
+			
+			for (std::size_t i = M; i < N; i++) {
+				this->elem[i] = std::move(elem[i - M]);
 			}
 		}
 
@@ -129,30 +162,6 @@ namespace rt {
 	using vec2z = vec2<std::size_t>;
 	using vec3z = vec3<std::size_t>;
 	using vec4z = vec4<std::size_t>;
-
-	template<class T, class... Args>
-	RT_DEVICE vec<T, sizeof...(Args)> vector(const Args&... args) {
-		T elem[] = { static_cast<T>(args)... };
-		vec<T, sizeof...(Args)> out;
-
-		for (std::size_t i = 0; i < sizeof...(Args); i++) {
-			out[i] = elem[i];
-		}
-
-		return out;
-	}
-
-	template<class T, class U, std::size_t N, class... Args>
-	RT_DEVICE vec<T, sizeof...(Args) + N> vector(const vec<U, N>& arg, const Args&... args) {
-		T elem[] = { static_cast<T>(args)... };
-		vec<T, sizeof...(Args) + N> out(arg);
-
-		for (std::size_t i = 0; i < sizeof...(Args); i++) {
-			out[N + i] = elem[i];
-		}
-		
-		return out;
-	}
 
 	template<class T, std::size_t N>
 	RT_DEVICE vec<T, N> floor(const vec<T, N>& arg) {
@@ -318,7 +327,7 @@ namespace rt {
 		T y = a[2] * b[0] - a[0] * b[2];
 		T z = a[0] * b[1] - a[1] * b[0];
 
-		return vector<T>(x, y, z);
+		return vec3<T>(std::move(x), std::move(y), std::move(z));
 	}
 
 	// https://en.wikipedia.org/wiki/Rodrigues%27_rotation_formula
@@ -330,23 +339,28 @@ namespace rt {
 	template<class T>
 	RT_DEVICE void tangents(const vec3<T>& i, vec3<T>& j, vec3<T>& k) {
 		if (abs(i[0]) > abs(i[1])) {
-			j = normalize(vector<T>(-i[2], 0, i[0]));
+			j = normalize(vec3<T>(-i[2], 0, i[0]));
 		} else {
-			j = normalize(vector<T>(0, i[2], -i[1]));
+			j = normalize(vec3<T>(0, i[2], -i[1]));
 		}
 
 		k = cross(i, j);
 	}
 
 	template<class T, std::size_t N, std::size_t M>
-	RT_DEVICE vec<T, N> permute(const vec<T, M>& arg, const vecz<N>& index) {
-		vec<T, N> out;
+	RT_DEVICE vec<T, M> permute(const vec<T, N>& arg, const vecz<M>& index) {
+		vec<T, M> out;
 
-		for (std::size_t i = 0; i < N; i++) {
+		for (std::size_t i = 0; i < M; i++) {
 			out[i] = arg[index[i]];
 		}
 
 		return out;
+	}
+
+	template<class T, std::size_t N, class... Args>
+	RT_DEVICE vec<T, sizeof...(Args)> permute(const vec<T, N>& arg, Args&&... index) {
+		return permute(arg, vecz<sizeof...(Args)>(std::forward<Args>(index)...));
 	}
 
 	template<class T, std::size_t N>

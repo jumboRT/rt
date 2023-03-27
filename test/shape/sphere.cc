@@ -6,7 +6,7 @@
 
 void test_shape_sphere(int, char**) {
 	rt::intersection i;
-	rt::vec3f origin = rt::vector<rt::real>(1, 1, 1);
+	rt::vec3f origin = rt::vec3f(1, 1, 1);
 	rt::vec3f normal = normalize(origin);
 	rt::ray3f ray(origin, -normal, 0);
 	rt::sphere sphere(1);

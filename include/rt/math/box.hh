@@ -3,8 +3,7 @@
 
 #include "rt/math/vector.hh"
 
-// TODO: create box with min and max
-// TODO: create empty box
+#include <limits>
 
 namespace rt {
 	template<class T, std::size_t N>
@@ -15,9 +14,14 @@ namespace rt {
 
 		box() = default;
 
-		RT_DEVICE box(const vec<T, N>& arg) {
+		RT_DEVICE box(vec<T, N> arg) {
 			min = arg;
-			max = arg;
+			max = std::move(arg);
+		}
+
+		RT_DEVICE box(vec<T, N> min, vec<T, N> max) {
+			this->min = std::move(min);
+			this->max = std::move(max);
 		}
 
 		template<class U, std::size_t M>
@@ -64,6 +68,10 @@ namespace rt {
 
 		RT_DEVICE friend box operator&(box a, const box& b) {
 			return a &= b;
+		}
+
+		RT_DEVICE static box empty() {
+			return box(std::numeric_limits<T>::lowest(), std::numeric_limits<T>::max());
 		}
 	};
 
@@ -124,7 +132,17 @@ namespace rt {
 
 	template<class T, std::size_t N>
 	RT_DEVICE T exterior(const box<T, N>& arg) {
-		return 2 * sum(vec<T, N>(interior(arg)) / size(arg));
+		vec<T, N> out = 1;
+
+		for (std::size_t i = 0; i < N; i++) {
+			for (std::size_t j = 0; j < N; j++) {
+				if (i != j) {
+					out[i] *= arg[j];
+				}
+			}
+		}
+
+		return 2 * sum(out);
 	}
 
 	template<class T, std::size_t N>
