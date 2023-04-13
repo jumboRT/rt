@@ -5,6 +5,7 @@
 #include <iterator>
 #include <utility>
 #include <type_traits>
+#include <algorithm>
 
 namespace rt {
 	namespace detail {
@@ -25,8 +26,8 @@ namespace rt {
 		struct select_iterator {
 			typedef typename std::conditional<
 				std::is_const<typename std::remove_reference<T>::type>::value,
-				typename std::decay<typename T::const_iterator>::type,
-				typename std::decay<typename T::iterator>::type>::type type;
+				typename std::remove_reference<T>::type::iterator,
+				typename std::remove_reference<T>::type::iterator>::type type;
 		};
 	}
 	
@@ -42,19 +43,17 @@ namespace rt {
 		zip_iterator(Iters &&...iters) : iters(iters...) {}
 
 		zip_iterator& operator++() {
-				for (auto &&iter : iters) {
-						++iter;
-				}
+			return next(typename detail::make_index_sequence<sizeof...(Iters)>::type());
 		}
 
 		zip_iterator operator++(int) {
-				const zip_iterator ret = *this;
-				++*this;
-				return ret;
+			const zip_iterator ret = *this;
+			++*this;
+			return ret;
 		}
 
 		bool operator==(const zip_iterator &other) const {
-			return equal(other);
+			return equal(other, typename detail::make_index_sequence<sizeof...(Iters)>::type());
 		}
 
 		bool operator!=(const zip_iterator &other) const {
@@ -67,13 +66,20 @@ namespace rt {
 
 		private:
 		template<std::size_t... I>
-		bool equal(const zip_iterator &other, detail::index_sequence<I...>) {
-			return std::min({ (std::get<I>(iters) == std::get<I>(other.iters))... });
+		bool equal(const zip_iterator &other, detail::index_sequence<I...>) const {
+			return std::max({ (std::get<I>(iters) == std::get<I>(other.iters))... });
 		}
 
 		template<std::size_t... I>
 		value_type deref(detail::index_sequence<I...>) {
 			return std::make_tuple(*std::get<I>(iters)...);
+		}
+
+		template<std::size_t... I>
+		zip_iterator& next(detail::index_sequence<I...>) {
+			int _[]{ 0, (++std::get<I>(iters), 0)...};
+			(void) _;
+			return *this;
 		}
 	};
 
@@ -125,9 +131,9 @@ int main() {
 	std::vector<float> vec2(50, 42);
 	
 	auto tmp = rt::zip(vec1, vec2);
-	for (auto &&x : tmp) {}
-	/*
-	auto iter = rt::zip(vec1.begin(), vec2.begin());
-	std::cout << std::get<0>(*iter) << std::endl;
-	*/
+	for (auto &&x : tmp) {
+		auto a = std::get<0>(x);
+		auto b = std::get<1>(x);
+		std::cout << a << ", " << b << std::endl;
+	}
 }

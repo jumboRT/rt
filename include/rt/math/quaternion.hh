@@ -3,8 +3,6 @@
 
 #include "rt/math/vector.hh"
 
-// TODO: reference/rvalue reference voor vec4 conversions
-
 namespace rt {
 	template<class T>
 	class quat {
@@ -17,8 +15,17 @@ namespace rt {
 			elem = val;
 		}
 
-		RT_DEVICE quat(T a, T b, T c, T d) {
-			elem = vec4<T>(std::move(a), std::move(b), std::move(c), std::move(d));
+		RT_DEVICE quat(T x, T y, T z, T w) {
+			elem = vec4<T>(std::move(x), std::move(y), std::move(z), std::move(w));
+		}
+
+		RT_DEVICE quat(const vec3<T>& axis, const T& theta) {
+			*this = quat(cos(theta / 2), axis * sin(theta / 2));
+		}
+
+		template<class U>
+		RT_DEVICE explicit quat(const U& x, const vec3<U>& arg) {
+			elem = vec4<T>(static_cast<T>(x), static_cast<T>(arg[0]), static_cast<T>(arg[1]), static_cast<T>(arg[2]));
 		}
 
 		template<class U>
@@ -29,6 +36,11 @@ namespace rt {
 		template<class U>
 		RT_DEVICE explicit quat(const quat<U>& arg) {
 			elem = static_cast<vec4<T>>(arg);
+		}
+
+		template<class U>
+		RT_DEVICE explicit operator vec3<U>() const {
+			return vec3<U>(static_cast<U>(elem[1]), static_cast<U>(elem[2]), static_cast<U>(elem[3]));
 		}
 
 		template<class U>
@@ -89,10 +101,7 @@ namespace rt {
 		}
 
 		RT_DEVICE vec3<T> operator()(vec3<T> arg) const {
-			quat tmp(0, std::move(arg[0]), std::move(arg[1]), std::move(arg[2]));
-			quat out((*this)(tmp)(quat(elem[0], -elem[1], -elem[2], -elem[3])));
-
-			return vec3<T>(std::move(out[1]), std::move(out[2]), std::move(out[3]));
+			return vec3<T>((*this)(quat(0, arg))(quat(elem[0], -elem[1], -elem[2], -elem[3])));
 		}
 
 		RT_DEVICE quat operator()(const quat& arg) const {
